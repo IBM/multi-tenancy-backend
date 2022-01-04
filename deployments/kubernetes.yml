@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-backend
+  template:
+    metadata:
+      labels:
+        app: service-backend
+    spec:
+      containers:
+      - name: service-backend
+        image: IMAGE_NAME
+        env:
+        - name: POSTGRES_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres.username
+              key: POSTGRES_USERNAME
+        - name: POSTGRES_CERTIFICATE_DATA
+          valueFrom:
+            secretKeyRef:
+              name: postgres.certificate-data
+              key: POSTGRES_CERTIFICATE_DATA
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres.password
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres.url
+              key: POSTGRES_URL
+        - name: APPID_AUTH_SERVER_URL
+          valueFrom:
+            secretKeyRef:
+              name: appid.oauthserverurl
+              key: APPID_AUTH_SERVER_URL
+        - name: APPID_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: appid.client-id-catalog-service 
+              key: APPID_CLIENT_ID        
+        ports:
+        - containerPort: 8081
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "curl -s http://localhost:8081/q/health/live"]
+          initialDelaySeconds: 20
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "curl -s http://localhost:8081/q/health/ready"]
+          initialDelaySeconds: 40
+      restartPolicy: Always     
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-backend
+  labels:
+    app: service-backend
+spec:
+  type: NodePort
+  ports:
+    - port: 8081
+      name: http
+  selector:
+    app: service-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-backend-cip
+  labels:
+    app: service-backend-cip
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8081
+  selector:
+    app: service-backend
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: service-backend
+spec:
+  rules:
+  - host: service-backend.cluster-ingress-subdomain
+    http:
+      paths:
+      - backend:
+          serviceName: service-backend-cip
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - service-backend.cluster-ingress-subdomain
+    secretName: cluster-ingress-secret
