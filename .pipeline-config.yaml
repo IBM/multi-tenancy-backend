@@ -5,7 +5,7 @@ setup:
   script: |
     #!/usr/bin/env bash
 
-    source ci-cd-scripts/code_setup.sh
+    source ci-scripts/code_setup.sh
 
 test:
   abort_on_failure: false
@@ -25,8 +25,8 @@ static-scan:
     if [ -z "$(get_env opt-in-sonar "")" ]; then
       echo "If you want to enable this stage, add 'opt-in-sonar' parameter to your pipeline with any value." >&2
     else
-      chmod 777 ci-cd-scripts/sonarqube/sonarqube_run
-      ci-cd-scripts/sonarqube/sonarqube_run
+      chmod 777 ci-scripts/sonarqube/sonarqube_run
+      ci-scripts/sonarqube/sonarqube_run
     fi
 
 containerize:
@@ -41,8 +41,8 @@ containerize:
       set -x
     fi
 
-    source ci-cd-scripts/build_setup.sh
-    source ci-cd-scripts/build.sh
+    source ci-scripts/build_setup.sh
+    source ci-scripts/build.sh
 
 deploy:
   image: icr.io/continuous-delivery/pipeline/pipeline-base-image:2.12@sha256:ff4053b0bca784d6d105fee1d008cfb20db206011453071e86b69ca3fde706a4
@@ -55,8 +55,8 @@ deploy:
       set -x
     fi
 
-    source ci-cd-scripts/deploy_setup.sh
-    source ci-cd-scripts/deploy.sh
+    source ci-scripts/deploy_setup.sh
+    source ci-scripts/deploy.sh
 
 sign-artifact:
   abort_on_failure: false
@@ -67,7 +67,7 @@ sign-artifact:
       STAGE_ABORT_ON_FAILURE="false"
       STAGE_IMAGE_PULL_POLICY="IfNotPresent"
 
-      source ci-cd-scripts/sign_image.sh
+      source ci-scripts/sign_image.sh
 
 acceptance-test:
   abort_on_failure: false
@@ -83,7 +83,7 @@ release:
   script: |
     #!/usr/bin/env bash
 
-    source ci-cd-scripts/release.sh
+    source ci-scripts/release.sh
 
 scan-artifact:
   abort_on_failure: false
@@ -91,7 +91,7 @@ scan-artifact:
   script: |
     #!/usr/bin/env bash
 
-    source ci-cd-scripts/va_scan.sh
+    source ci-scripts/va_scan.sh
 
 dynamic-scan: 
   abort_on_failure: false
