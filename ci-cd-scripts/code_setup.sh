@@ -12,7 +12,7 @@ curl --location --request PUT "${GITLAB_URL}/projects/${OWNER}%2F${REPO}/" \
     }'
 
 echo "ci-cd-scripts/code_setup.sh"
-export PARENT=$(get_env "multi-tenancy-parent")
+export PARENT=$(get_env "multi-tenancy")
 echo $PARENT
 
 cd ..
