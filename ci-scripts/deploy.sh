@@ -126,10 +126,11 @@ PLATFORM_NAME="$(get_env PLATFORM_NAME)"
 if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
     HOST_HTTP="service-frontend.cluster-ingress-subdomain"
     HOST_TLS="service-frontend.cluster-ingress-subdomain"
-  else
+else
     HOST=$(ibmcloud oc cluster get -c $(get_env IBM_OPENSHIFT_SERVICE_NAME) --output json | grep "hostname" | awk '{print $2;}'| sed 's/"//g' | sed 's/,//g')
     HOST_HTTP=${HOST}
     HOST_TLS=${HOST}
+    #With OpenShift, TLS secret for default Ingress subdomain only exists in project openshift-ingress, so need to extract and re-create in tenant project
     TLS_SECRET_NAME=$(echo $HOST| cut -d'.' -f 1)
     echo "Openshift TLS_SECRET_NAME=$TLS_SECRET_NAME"
     oc extract secret/"$TLS_SECRET_NAME" --to=. -n openshift-ingress
@@ -164,9 +165,16 @@ if [ "$status" = failure ]; then
   exit 1
 fi
 
-IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
-PORT=$(kubectl get service -n  "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "$service_name" -o json | jq -r '.spec.ports[0].nodePort')
+if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
+  IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
+  PORT=$(kubectl get service -n  "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "$service_name" -o json | jq -r '.spec.ports[0].nodePort')
 
-echo "Application REST URL: http://${IP_ADDRESS}:${PORT}/category/2/products"
+  echo "IKS Application REST URL: http://${IP_ADDRESS}:${PORT}/category/2/products"
+  echo -n "http://${IP_ADDRESS}:${PORT}" > ../app-url
+else
+  echo "OpenShift Application REST URL: http://${HOST}/category/2/products"
+  echo -n "http://${HOST}" > ../app-url
+fi
 
-echo -n "http://${IP_ADDRESS}:${PORT}" > ../app-url
+
+
