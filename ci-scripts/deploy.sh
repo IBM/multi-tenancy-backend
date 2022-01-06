@@ -130,6 +130,10 @@ if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
     HOST=$(ibmcloud oc cluster get -c $(get_env IBM_OPENSHIFT_SERVICE_NAME) --output json | grep "hostname" | awk '{print $2;}'| sed 's/"//g' | sed 's/,//g')
     HOST_HTTP=${HOST}
     HOST_TLS=${HOST}
+    TLS_SECRET_NAME=${HOST%.*} 
+    echo "TLS_SECRET_NAME=$TLS_SECRET_NAME"
+    oc extract secret/"$TLS_SECRET_NAME" --to=. -n openshift-ingress
+    oc create secret tls cluster-ingress-secret --cert tls.crt --key tls.key
 fi
 
 rm "${YAML_FILE}org"
