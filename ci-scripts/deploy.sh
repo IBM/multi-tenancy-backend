@@ -133,7 +133,7 @@ if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
     TLS_SECRET_NAME=$(echo $HOST| cut -d'.' -f 1)
     echo "Openshift TLS_SECRET_NAME=$TLS_SECRET_NAME"
     oc extract secret/"$TLS_SECRET_NAME" --to=. -n openshift-ingress
-    oc create secret tls cluster-ingress-secret --cert tls.crt --key tls.key
+    oc create secret tls cluster-ingress-secret -n "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" --cert tls.crt --key tls.key
 fi
 
 rm "${YAML_FILE}org"
