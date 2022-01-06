@@ -86,20 +86,40 @@ spec:
   selector:
     app: service-backend
 ---
-apiVersion: networking.k8s.io/v1beta1
+#apiVersion: networking.k8s.io/v1beta1
+#kind: Ingress
+#metadata:
+#  name: service-backend
+#spec:
+#  rules:
+#  - host: HOST_HTTP
+#    http:
+#      paths:
+#      - backend:
+#          serviceName: service-backend-cip
+#          servicePort: 80
+#        path: /
+#  tls:
+#  - hosts:
+#    - HOST_TLS
+#    secretName: cluster-ingress-secret
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: service-backend
+  name: service-backend 
 spec:
-  rules:
-  - host: HOST_HTTP
-    http:
-      paths:
-      - backend:
-          serviceName: service-backend-cip
-          servicePort: 80
-        path: /
   tls:
   - hosts:
     - HOST_TLS
     secretName: cluster-ingress-secret
+  rules:
+  - host: HOST_HTTP
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: service-backend-cip 
+            port: 
+              number: 80
+        pathType: ImplementationSpecific
