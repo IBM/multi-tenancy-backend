@@ -58,7 +58,6 @@ YAML_FILE="deployments/kubernetes.yml"
 cp ${YAML_FILE} "${YAML_FILE}org"
 rm ${YAML_FILE}
 sed "s#IMAGE_NAME#${IMAGE_NAME}#g" "${YAML_FILE}org" > ${YAML_FILE}
-cat ${YAML_FILE}
 
 deployment_name=$(yq r ${YAML_FILE} metadata.name)
 service_name=$(yq r -d1 ${YAML_FILE} metadata.name)
@@ -121,6 +120,28 @@ kubectl create secret generic appid.client-id-catalog-service \
       --from-literal "APPID_CLIENT_ID=$APPID_CLIENT_ID"
 
 #####################
+
+
+PLATFORM_NAME="$(get_env PLATFORM_NAME)"
+if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
+    HOST_HTTP="service-frontend.cluster-ingress-subdomain"
+    HOST_TLS="service-frontend.cluster-ingress-subdomain"
+  else
+    HOST=$(ibmcloud oc cluster get -c $(get_env IBM_OPENSHIFT_SERVICE_NAME) --output json | grep "hostname" | awk '{print $2;}'| sed 's/"//g' | sed 's/,//g')
+    HOST_HTTP=${HOST}
+    HOST_TLS=${HOST}
+fi
+
+rm "${YAML_FILE}org"
+cp ${YAML_FILE} "${YAML_FILE}org"
+rm ${YAML_FILE}
+sed "s#HOST_HTTP#${HOST_HTTP}#g" "${YAML_FILE}org" > ${YAML_FILE}
+rm "${YAML_FILE}org"
+cp ${YAML_FILE} "${YAML_FILE}org"
+rm ${YAML_FILE}
+sed "s#HOST_TLS#${HOST_TLS}#g" "${YAML_FILE}org" > ${YAML_FILE}
+cat ${YAML_FILE}
+
 
 kubectl apply --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" -f ${YAML_FILE}
 if kubectl rollout status --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "deployment/$deployment_name"; then

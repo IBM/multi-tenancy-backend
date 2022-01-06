@@ -92,7 +92,7 @@ metadata:
   name: service-backend
 spec:
   rules:
-  - host: service-backend.cluster-ingress-subdomain
+  - host: HOST_HTTP
     http:
       paths:
       - backend:
@@ -101,5 +101,5 @@ spec:
         path: /
   tls:
   - hosts:
-    - service-backend.cluster-ingress-subdomain
+    - HOST_TLS
     secretName: cluster-ingress-secret
