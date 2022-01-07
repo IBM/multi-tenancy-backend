@@ -13,7 +13,7 @@ test:
   script: |
     #!/usr/bin/env bash
 
-    cd ../"$(load_repo app-repo path)"
+    #cd ../"$(load_repo app-repo path)"
     exit 0
 
 static-scan:
