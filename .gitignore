@@ -1,3 +1,5 @@
+local.env
+
 # Eclipse
 .project
 .classpath
