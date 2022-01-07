@@ -172,11 +172,11 @@ if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
   #echo "IKS Application REST URL (via NodePort): http://${IP_ADDRESS}:${PORT}/category/2/products"
   #echo -n "http://${IP_ADDRESS}:${PORT}" > ../app-url
 
-  echo "IKS Application REST URL (via Ingress): http://${HOST}/backend/category/2/products""
+  echo "IKS Application REST URL (via Ingress): http://${HOST}/backend/category/2/products"
   echo -n "http://${HOST}/backend" > ../app-url
 else
   echo "OpenShift Application REST URL (via Ingress): http://${HOST}/category/2/products"
-  echo -n "http://${HOST}" > ../app-url
+  echo -n "http://${HOST}/backend" > ../app-url
 fi
 
 
