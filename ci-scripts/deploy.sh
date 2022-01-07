@@ -136,12 +136,9 @@ else
     rm tls.crt tls.key
 fi
 
-#Used to update the kubernetes deployment descriptor
+#Update the kubernetes deployment descriptor
 HOST_HTTP=${HOST}
 HOST_TLS=${HOST}
-
-
-
 rm "${YAML_FILE}org"
 cp ${YAML_FILE} "${YAML_FILE}org"
 rm ${YAML_FILE}
@@ -171,18 +168,14 @@ if [ "$status" = failure ]; then
 fi
 
 if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
-  IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
-  PORT=$(kubectl get service -n  "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "$service_name" -o json | jq -r '.spec.ports[0].nodePort')
-
+  #IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
+  #PORT=$(kubectl get service -n  "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "$service_name" -o json | jq -r '.spec.ports[0].nodePort')
   #echo "IKS Application REST URL (via NodePort): http://${IP_ADDRESS}:${PORT}/category/2/products"
   #echo -n "http://${IP_ADDRESS}:${PORT}" > ../app-url
 
-  echo "IKS Application REST URL (via Ingress): http://${HOST}/backend/category/2/products"
+  echo "IKS Application Backend REST URL example (via Ingress): http://${HOST}/backend/category/"
   echo -n "http://${HOST}/backend" > ../app-url
 else
-  echo "OpenShift Application REST URL (via Ingress): http://${HOST}/category/2/products"
+  echo "OpenShift Application Backend REST URL example (via Ingress): http://${HOST}/backend/category"
   echo -n "http://${HOST}/backend" > ../app-url
 fi
-
-
-
