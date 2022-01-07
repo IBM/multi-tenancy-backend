@@ -57,6 +57,20 @@ spec:
             command: ["sh", "-c", "curl -s http://localhost:8081/q/health/ready"]
           initialDelaySeconds: 40
       restartPolicy: Always     
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: service-backend
+#  labels:
+#    app: service-backend
+#spec:
+#  type: NodePort
+#  ports:
+#    - port: 8081
+#      name: http
+#  selector:
+#    app: service-backend
 ---
 apiVersion: v1
 kind: Service
@@ -64,20 +78,6 @@ metadata:
   name: service-backend
   labels:
     app: service-backend
-spec:
-  type: NodePort
-  ports:
-    - port: 8081
-      name: http
-  selector:
-    app: service-backend
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: service-backend-cip
-  labels:
-    app: service-backend-cip
 spec:
   type: ClusterIP
   ports:
@@ -116,10 +116,10 @@ spec:
   - host: HOST_HTTP
     http:
       paths:
-      - path: /
+      - path: /backend
         backend:
           service:
-            name: service-backend-cip 
+            name: service-backend
             port: 
               number: 80
         pathType: ImplementationSpecific
