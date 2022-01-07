@@ -1,4 +1,5 @@
 local.env
+src/main/resources/certificates
 
 # Eclipse
 .project
