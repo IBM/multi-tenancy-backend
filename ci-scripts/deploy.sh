@@ -124,18 +124,23 @@ kubectl create secret generic appid.client-id-catalog-service \
 
 PLATFORM_NAME="$(get_env PLATFORM_NAME)"
 if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
-    HOST_HTTP="service-frontend.cluster-ingress-subdomain"
-    HOST_TLS="service-frontend.cluster-ingress-subdomain"
+    HOST=$(ibmcloud ks cluster get --c $(get_env IBM_OPENSHIFT_SERVICE_NAME) --output json | jq -r '[.ingressHostname] | .[0]')
 else
+    #TODO rework HOST this with jq
     HOST=$(ibmcloud oc cluster get -c $(get_env IBM_OPENSHIFT_SERVICE_NAME) --output json | grep "hostname" | awk '{print $2;}'| sed 's/"//g' | sed 's/,//g')
-    HOST_HTTP=${HOST}
-    HOST_TLS=${HOST}
     #With OpenShift, TLS secret for default Ingress subdomain only exists in project openshift-ingress, so need to extract and re-create in tenant project
     TLS_SECRET_NAME=$(echo $HOST| cut -d'.' -f 1)
     echo "Openshift TLS_SECRET_NAME=$TLS_SECRET_NAME"
     oc extract secret/"$TLS_SECRET_NAME" --to=. -n openshift-ingress
     oc create secret tls cluster-ingress-secret -n "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" --cert tls.crt --key tls.key
+    rm tls.crt tls.key
 fi
+
+#Used to update the kubernetes deployment descriptor
+HOST_HTTP=${HOST}
+HOST_TLS=${HOST}
+
+
 
 rm "${YAML_FILE}org"
 cp ${YAML_FILE} "${YAML_FILE}org"
