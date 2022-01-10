@@ -57,20 +57,6 @@ spec:
             command: ["sh", "-c", "curl -s http://localhost:8081/q/health/ready"]
           initialDelaySeconds: 40
       restartPolicy: Always     
-#---
-#apiVersion: v1
-#kind: Service
-#metadata:
-#  name: service-backend
-#  labels:
-#    app: service-backend
-#spec:
-#  type: NodePort
-#  ports:
-#    - port: 8081
-#      name: http
-#  selector:
-#    app: service-backend
 ---
 apiVersion: v1
 kind: Service
@@ -79,6 +65,20 @@ metadata:
   labels:
     app: service-backend
 spec:
+  type: NodePort
+  ports:
+    - port: 8081
+      name: http
+  selector:
+    app: service-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-backend-cip
+  labels:
+    app: service-backend-cip
+spec:
   type: ClusterIP
   ports:
     - port: 80
@@ -86,40 +86,20 @@ spec:
   selector:
     app: service-backend
 ---
-#apiVersion: networking.k8s.io/v1beta1
-#kind: Ingress
-#metadata:
-#  name: service-backend
-#spec:
-#  rules:
-#  - host: HOST_HTTP
-#    http:
-#      paths:
-#      - backend:
-#          serviceName: service-backend-cip
-#          servicePort: 80
-#        path: /
-#  tls:
-#  - hosts:
-#    - HOST_TLS
-#    secretName: cluster-ingress-secret
-apiVersion: networking.k8s.io/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: service-backend 
+  name: service-backend
 spec:
-  tls:
-  - hosts:
-    - HOST_TLS
-    secretName: cluster-ingress-secret
   rules:
   - host: HOST_HTTP
     http:
       paths:
-      - path: /backend
-        backend:
-          service:
-            name: service-backend
-            port: 
-              number: 80
-        pathType: ImplementationSpecific
+      - backend:
+          serviceName: service-backend-cip
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - HOST_TLS
+    secretName: cluster-ingress-secret

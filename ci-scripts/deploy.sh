@@ -124,7 +124,8 @@ kubectl create secret generic appid.client-id-catalog-service \
 
 PLATFORM_NAME="$(get_env PLATFORM_NAME)"
 if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
-    HOST=$(ibmcloud ks cluster get --c $(get_env IBM_KUBERNETES_SERVICE_NAME) --output json | jq -r '[.ingressHostname] | .[0]')
+    //HOST=$(ibmcloud ks cluster get --c $(get_env IBM_KUBERNETES_SERVICE_NAME) --output json | jq -r '[.ingressHostname] | .[0]')
+    HOST="service-backend.cluster-ingress-subdomain"
 else
     #TODO rework HOST this with jq
     HOST=$(ibmcloud oc cluster get -c $(get_env IBM_OPENSHIFT_SERVICE_NAME) --output json | grep "hostname" | awk '{print $2;}'| sed 's/"//g' | sed 's/,//g')
@@ -168,13 +169,13 @@ if [ "$status" = failure ]; then
 fi
 
 if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
-  #IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
-  #PORT=$(kubectl get service -n  "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "$service_name" -o json | jq -r '.spec.ports[0].nodePort')
-  #echo "IKS Application REST URL (via NodePort): http://${IP_ADDRESS}:${PORT}/category/2/products"
-  #echo -n "http://${IP_ADDRESS}:${PORT}" > ../app-url
+  IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
+  PORT=$(kubectl get service -n  "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "$service_name" -o json | jq -r '.spec.ports[0].nodePort')
+  echo "IKS Application REST URL (via NodePort): http://${IP_ADDRESS}:${PORT}/category/2/products"
+  echo -n "http://${IP_ADDRESS}:${PORT}" > ../app-url
 
-  echo "IKS Application Backend REST URL example (via Ingress): http://${HOST}/backend/category/"
-  echo -n "http://${HOST}/backend" > ../app-url
+  #echo "IKS Application Backend REST URL example (via Ingress): http://${HOST}/backend/category/"
+  #echo -n "http://${HOST}/backend" > ../app-url
 else
   echo "OpenShift Application Backend REST URL example (via Ingress): http://${HOST}/backend/category"
   echo -n "http://${HOST}/backend" > ../app-url
