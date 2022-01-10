@@ -43,7 +43,7 @@ if [ "$APP_SCM_TYPE" == "gitlab" ]; then
     id=$(curl --header "PRIVATE-TOKEN: ${token}" ${APP_API_URL}/projects/${APP_REPO_ORG}%2F${APP_REPO_NAME} | jq .id)
     DEPLOYMENT_ARTIFACT="${APP_API_URL}/projects/${id}/repository/files/deployment.yml/raw?ref=${COMMIT_SHA}"
 else
-    DEPLOYMENT_ARTIFACT="https://raw.githubusercontent.com/${APP_REPO_ORG}/${APP_REPO_NAME}/${COMMIT_SHA}/deployment.yml"
+    DEPLOYMENT_ARTIFACT="https://raw.githubusercontent.com/${APP_REPO_ORG}/${APP_REPO_NAME}/${COMMIT_SHA}/deployments/kubernetes.yml"
 fi
 DEPLOYMENT_ARTIFACT_PATH="$(load_repo app-repo path)"
 DEPLOYMENT_ARTIFACT_DIGEST="$(shasum -a256 "${WORKSPACE}/${DEPLOYMENT_ARTIFACT_PATH}/deployment.yml" | awk '{print $1}')"
