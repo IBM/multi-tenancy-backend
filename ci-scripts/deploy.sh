@@ -177,6 +177,13 @@ if [ "$PLATFORM_NAME" = "IBM_KUBERNETES_SERVICE" ]; then
   #echo "IKS Application Backend REST URL example (via Ingress): http://${HOST}/backend/category/"
   #echo -n "http://${HOST}/backend" > ../app-url
 else
-  echo "OpenShift Application Backend REST URL example (via Ingress): http://${HOST}/backend/category"
-  echo -n "http://${HOST}/backend" > ../app-url
+  
+  IP_ADDRESS=$(kubectl get nodes -o json | jq -r '[.items[] | .status.addresses[] | select(.type == "ExternalIP") | .address] | .[0]')
+  PORT=$(kubectl get service -n  "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" "$service_name" -o json | jq -r '.spec.ports[0].nodePort')
+
+  echo "OpenShift Application REST URL (via NodePort): http://${IP_ADDRESS}:${PORT}/category/2/products"
+  echo -n "http://${IP_ADDRESS}:${PORT}" > ../app-url
+
+  #echo "OpenShift Application Backend REST URL example (via Ingress): http://${HOST}/backend/category"
+  #echo -n "http://${HOST}/backend" > ../app-url
 fi
