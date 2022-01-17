@@ -15,6 +15,9 @@ if [[ $APP_SCM_TYPE == "gitlab" ]]; then
 else
   curl -H "Authorization: Bearer $(cat ${APP_TOKEN_PATH})" ${APP_API_URL}/repos/${APP_REPO_OWNER}/${APP_REPO_NAME}/branches/main/protection \
     -XPUT -d '{"required_pull_request_reviews":{"dismiss_stale_reviews":true},"required_status_checks":{"strict":true,"contexts":["tekton/code-branch-protection","tekton/code-unit-tests","tekton/code-cis-check","tekton/code-vulnerability-scan","tekton/code-detect-secrets"]},"enforce_admins":null,"restrictions":null}'
+  
+  curl -H "Authorization: Bearer $(cat ${APP_TOKEN_PATH})" ${APP_API_URL}/repos/${APP_REPO_OWNER}/multi-tenancy/branches/main/protection \
+    -XPUT -d '{"required_pull_request_reviews":{"dismiss_stale_reviews":true},"required_status_checks":{"strict":true,"contexts":["tekton/code-branch-protection","tekton/code-unit-tests","tekton/code-cis-check","tekton/code-vulnerability-scan","tekton/code-detect-secrets"]},"enforce_admins":null,"restrictions":null}'
 fi
 
 GITLAB_TOKEN=$(cat "$WORKSPACE/secrets/git-token")
