@@ -39,4 +39,4 @@ save_repo multi-tenancy "branch=main"
 save_repo multi-tenancy "commit=${GIT_COMMIT}"
 
 pwd
-ibmcloud plugin show cra
+#ibmcloud plugin show cra
