@@ -157,33 +157,33 @@ CLUSTER_INGRESS_SECRET=$( ibmcloud ks cluster get --cluster ${IBMCLOUD_IKS_CLUST
 if [ ! -z "${CLUSTER_INGRESS_SUBDOMAIN}" ] && [ "${KEEP_INGRESS_CUSTOM_DOMAIN}" != true ]; then
   echo "=========================================================="
   echo "UPDATING manifest with ingress information"
-  INGRESS_DOC_INDEX=$(yq read --doc "*" --tojson $DEPLOYMENT_FILE | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="ingress") | .key')
+  INGRESS_DOC_INDEX=$(yq read --doc "*" --tojson ${YAML_FILE} | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="ingress") | .key')
   if [ -z "$INGRESS_DOC_INDEX" ]; then
-    echo "No Kubernetes Ingress definition found in $DEPLOYMENT_FILE."
+    echo "No Kubernetes Ingress definition found in ${YAML_FILE}."
   else
     # Update ingress with cluster domain/secret information
     # Look for ingress rule whith host contains the token "cluster-ingress-subdomain"
-    INGRESS_RULES_INDEX=$(yq r --doc $INGRESS_DOC_INDEX --tojson $DEPLOYMENT_FILE | jq '.spec.rules | to_entries | .[] | select( .value.host | contains("cluster-ingress-subdomain")) | .key')
+    INGRESS_RULES_INDEX=$(yq r --doc $INGRESS_DOC_INDEX --tojson ${YAML_FILE} | jq '.spec.rules | to_entries | .[] | select( .value.host | contains("cluster-ingress-subdomain")) | .key')
     if [ ! -z "$INGRESS_RULES_INDEX" ]; then
-      INGRESS_RULE_HOST=$(yq r --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.rules[${INGRESS_RULES_INDEX}].host)
+      INGRESS_RULE_HOST=$(yq r --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.rules[${INGRESS_RULES_INDEX}].host)
       HOST_APP_NAME="$(cut -d'.' -f1 <<<"$INGRESS_RULE_HOST")"
       HOST_APP_NAME_DEPLOYMENT=${HOST_APP_NAME}-${IBMCLOUD_IKS_CLUSTER_NAMESPACE}-deployment
-      yq w --inplace --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.rules[${INGRESS_RULES_INDEX}].host ${INGRESS_RULE_HOST/$HOST_APP_NAME/$HOST_APP_NAME_DEPLOYMENT}
-      INGRESS_RULE_HOST=$(yq r --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.rules[${INGRESS_RULES_INDEX}].host)
-      yq w --inplace --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.rules[${INGRESS_RULES_INDEX}].host ${INGRESS_RULE_HOST/cluster-ingress-subdomain/$CLUSTER_INGRESS_SUBDOMAIN}
+      yq w --inplace --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.rules[${INGRESS_RULES_INDEX}].host ${INGRESS_RULE_HOST/$HOST_APP_NAME/$HOST_APP_NAME_DEPLOYMENT}
+      INGRESS_RULE_HOST=$(yq r --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.rules[${INGRESS_RULES_INDEX}].host)
+      yq w --inplace --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.rules[${INGRESS_RULES_INDEX}].host ${INGRESS_RULE_HOST/cluster-ingress-subdomain/$CLUSTER_INGRESS_SUBDOMAIN}
     fi
     # Look for ingress tls whith secret contains the token "cluster-ingress-secret"
-    INGRESS_TLS_INDEX=$(yq r --doc $INGRESS_DOC_INDEX --tojson $DEPLOYMENT_FILE | jq '.spec.tls | to_entries | .[] | select(.secretName="cluster-ingress-secret") | .key')
+    INGRESS_TLS_INDEX=$(yq r --doc $INGRESS_DOC_INDEX --tojson ${YAML_FILE} | jq '.spec.tls | to_entries | .[] | select(.secretName="cluster-ingress-secret") | .key')
     if [ ! -z "$INGRESS_TLS_INDEX" ]; then
-      yq w --inplace --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.tls[${INGRESS_TLS_INDEX}].secretName $CLUSTER_INGRESS_SECRET
-      INGRESS_TLS_HOST_INDEX=$(yq r --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.tls[${INGRESS_TLS_INDEX}] --tojson | jq '.hosts | to_entries | .[] | select( .value | contains("cluster-ingress-subdomain")) | .key')
+      yq w --inplace --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.tls[${INGRESS_TLS_INDEX}].secretName $CLUSTER_INGRESS_SECRET
+      INGRESS_TLS_HOST_INDEX=$(yq r --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.tls[${INGRESS_TLS_INDEX}] --tojson | jq '.hosts | to_entries | .[] | select( .value | contains("cluster-ingress-subdomain")) | .key')
       if [ ! -z "$INGRESS_TLS_HOST_INDEX" ]; then
-        INGRESS_TLS_HOST=$(yq r --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.tls[${INGRESS_TLS_INDEX}].hosts[$INGRESS_TLS_HOST_INDEX])
+        INGRESS_TLS_HOST=$(yq r --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.tls[${INGRESS_TLS_INDEX}].hosts[$INGRESS_TLS_HOST_INDEX])
         HOST_APP_NAME="$(cut -d'.' -f1 <<<"$INGRESS_TLS_HOST")"
         HOST_APP_NAME_DEPLOYMENT=${HOST_APP_NAME}-${IBMCLOUD_IKS_CLUSTER_NAMESPACE}-deployment
-        yq w --inplace --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.tls[${INGRESS_TLS_INDEX}].hosts[$INGRESS_TLS_HOST_INDEX] ${INGRESS_TLS_HOST/$HOST_APP_NAME/$HOST_APP_NAME_DEPLOYMENT}
-        INGRESS_TLS_HOST=$(yq r --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.tls[${INGRESS_TLS_INDEX}].hosts[$INGRESS_TLS_HOST_INDEX])
-        yq w --inplace --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE spec.tls[${INGRESS_TLS_INDEX}].hosts[$INGRESS_TLS_HOST_INDEX] ${INGRESS_TLS_HOST/cluster-ingress-subdomain/$CLUSTER_INGRESS_SUBDOMAIN}
+        yq w --inplace --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.tls[${INGRESS_TLS_INDEX}].hosts[$INGRESS_TLS_HOST_INDEX] ${INGRESS_TLS_HOST/$HOST_APP_NAME/$HOST_APP_NAME_DEPLOYMENT}
+        INGRESS_TLS_HOST=$(yq r --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.tls[${INGRESS_TLS_INDEX}].hosts[$INGRESS_TLS_HOST_INDEX])
+        yq w --inplace --doc $INGRESS_DOC_INDEX ${YAML_FILE} spec.tls[${INGRESS_TLS_INDEX}].hosts[$INGRESS_TLS_HOST_INDEX] ${INGRESS_TLS_HOST/cluster-ingress-subdomain/$CLUSTER_INGRESS_SUBDOMAIN}
       fi
     fi
     if kubectl explain route > /dev/null 2>&1; then 
@@ -233,11 +233,11 @@ echo "CLUSTER_INGRESS_SUBDOMAIN=${CLUSTER_INGRESS_SUBDOMAIN}"
 echo "KEEP_INGRESS_CUSTOM_DOMAIN=${KEEP_INGRESS_CUSTOM_DOMAIN}"
 
 if [ ! -z "${CLUSTER_INGRESS_SUBDOMAIN}" ] && [ "${KEEP_INGRESS_CUSTOM_DOMAIN}" != true ]; then
-  INGRESS_DOC_INDEX=$(yq read --doc "*" --tojson $DEPLOYMENT_FILE | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="ingress") | .key')
+  INGRESS_DOC_INDEX=$(yq read --doc "*" --tojson ${YAML_FILE} | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="ingress") | .key')
   if [ -z "$INGRESS_DOC_INDEX" ]; then
-    echo "No Kubernetes Ingress definition found in $DEPLOYMENT_FILE."
+    echo "No Kubernetes Ingress definition found in ${YAML_FILE}."
   else
-    service_name=$(yq r --doc $INGRESS_DOC_INDEX $DEPLOYMENT_FILE metadata.name)  
+    service_name=$(yq r --doc $INGRESS_DOC_INDEX ${YAML_FILE} metadata.name)  
     APPURL=$(kubectl get ing ${service_name} --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" -o json | jq -r  .spec.rules[0].host)
     echo "Application URL (via Ingress): https://${APPURL}/category/2/products"
     APP_URL_PATH="$(echo "${INVENTORY_ENTRY}" | sed 's/\//_/g')_app-url.json"
