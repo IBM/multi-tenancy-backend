@@ -239,7 +239,7 @@ if [ ! -z "${CLUSTER_INGRESS_SUBDOMAIN}" ] && [ "${KEEP_INGRESS_CUSTOM_DOMAIN}" 
   else
     service_name=$(yq r --doc $INGRESS_DOC_INDEX ${YAML_FILE} metadata.name)  
     APPURL=$(kubectl get ing ${service_name} --namespace "$IBMCLOUD_IKS_CLUSTER_NAMESPACE" -o json | jq -r  .spec.rules[0].host)
-    echo "Application URL (via Ingress): https://${APPURL}/category/2/products"
+    echo "Application Backend URL (via Ingress): https://${APPURL}/category/2/products"
     APP_URL_PATH="$(echo "${INVENTORY_ENTRY}" | sed 's/\//_/g')_app-url.json"
     echo -n https://${APPURL} > ../app-url
   fi
